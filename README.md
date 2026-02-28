@@ -114,3 +114,11 @@ Exemplo minimo de `.gitignore`:
 ---
 
 Trabalho D Faculdade.. Empresarial
+
+Extras ..
+
+<img width="786" height="449" alt="12" src="https://github.com/user-attachments/assets/c82fb7d8-4e50-42bb-8f2b-8ae3dbe3a031" />
+
+<img width="842" height="668" alt="12hg" src="https://github.com/user-attachments/assets/24399558-3753-44fc-8dd5-ddbbb7b942a2" />
+
+

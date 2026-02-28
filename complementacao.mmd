@@ -1,0 +1,194 @@
+﻿flowchart LR
+    %% =========================
+    %% COMPLEMENTACAO.SQL - DEPENDENCIAS
+    %% =========================
+
+    subgraph FUNCOES
+        F1[core.fn_CRA_Aluno]
+        F2[core.fn_SaldoAluno]
+        F3[analytics.fn_TempoKey]
+    end
+
+    subgraph PROCEDURES
+        P1[log.sp_RegisterError]
+        P2[telemetry.sp_StartSession]
+        P3[telemetry.sp_IngerirEvento]
+        P4[core.sp_MatricularAluno]
+        P5[core.sp_LancarNotaFinal]
+        P6[core.sp_RegistrarPagamento]
+        P7[analytics.sp_RebuildWarehouse]
+        P8[telemetry.sp_RebuildMetricMinute]
+    end
+
+    subgraph VIEWS
+        V1[analytics.vw_RankingTurma]
+        V2[analytics.vw_VisaoUnicaFaculda]
+        V3[analytics.vw_PainelExecutivo]
+        V4[telemetry.vw_EventHealth]
+        V5[log.vw_AuditoriaRecente]
+        V6[dbo.vw_VisaoUnicaFaculda]
+    end
+
+    subgraph TRIGGERS
+        T1[core.trg_Nota_ValidateAndDerive]
+        T2[core.trg_Matricula_Audit]
+        T3[core.trg_Pagamento_RollupAudit]
+        T4[telemetry.trg_EventStream_MinuteAgg]
+    end
+
+    subgraph CORE_TABLES
+        C_ALUNO[(core.Aluno)]
+        C_CURSO[(core.Curso)]
+        C_DISC[(core.Disciplina)]
+        C_TURMA[(core.Turma)]
+        C_MAT[(core.Matricula)]
+        C_AVA[(core.Avaliacao)]
+        C_NOTA[(core.Nota)]
+        C_PARC[(core.ParcelaFinanceira)]
+        C_PAG[(core.Pagamento)]
+        C_PESSOA[(core.Pessoa)]
+        C_DEPT[(core.Departamento)]
+        C_PROF[(core.Professor)]
+    end
+
+    subgraph TELEMETRY_TABLES
+        TE_ET[(telemetry.EventType)]
+        TE_SESS[(telemetry.SessionApp)]
+        TE_EVT[(telemetry.EventStream)]
+        TE_MM[(telemetry.MetricMinute)]
+    end
+
+    subgraph LOG_TABLES
+        L_AUD[(log.ChangeAudit)]
+        L_ERR[(log.ErrorLog)]
+        L_RUN[(log.ProcessRun)]
+    end
+
+    subgraph ANALYTICS_TABLES
+        A_DT[(analytics.DimTempo)]
+        A_DA[(analytics.DimAluno)]
+        A_DC[(analytics.DimCurso)]
+        A_DTU[(analytics.DimTurma)]
+        A_FA[(analytics.FatoAcademico)]
+        A_FF[(analytics.FatoFinanceiro)]
+        A_FT[(analytics.FatoTelemetria)]
+        A_KPI[(analytics.KPI_Diario)]
+    end
+
+    %% ===== Funcoes =====
+    F1 --> C_MAT
+    F1 --> C_TURMA
+    F1 --> C_DISC
+
+    F2 --> C_PARC
+
+    %% ===== Procedures =====
+    P1 --> L_ERR
+
+    P2 --> TE_SESS
+    P2 --> TE_ET
+    P2 --> TE_EVT
+
+    P3 --> TE_ET
+    P3 --> TE_EVT
+
+    P4 --> C_ALUNO
+    P4 --> C_TURMA
+    P4 --> C_MAT
+    P4 --> TE_ET
+    P4 --> TE_EVT
+
+    P5 --> C_MAT
+    P5 --> TE_ET
+    P5 --> TE_EVT
+
+    P6 --> C_PAG
+    P6 --> C_PARC
+    P6 --> TE_ET
+    P6 --> TE_EVT
+
+    P7 --> F3
+    P7 --> L_RUN
+    P7 --> P1
+    P7 --> C_ALUNO
+    P7 --> C_CURSO
+    P7 --> C_DEPT
+    P7 --> C_DISC
+    P7 --> C_MAT
+    P7 --> C_PARC
+    P7 --> C_PESSOA
+    P7 --> C_PROF
+    P7 --> C_TURMA
+    P7 --> TE_EVT
+    P7 --> A_DT
+    P7 --> A_DA
+    P7 --> A_DC
+    P7 --> A_DTU
+    P7 --> A_FA
+    P7 --> A_FF
+    P7 --> A_FT
+    P7 --> A_KPI
+
+    P8 --> TE_EVT
+    P8 --> TE_ET
+    P8 --> TE_MM
+
+    %% ===== Views =====
+    V1 --> C_MAT
+    V1 --> C_TURMA
+    V1 --> C_ALUNO
+    V1 --> C_PESSOA
+
+    V2 --> C_ALUNO
+    V2 --> C_CURSO
+    V2 --> C_DISC
+    V2 --> C_MAT
+    V2 --> C_PESSOA
+    V2 --> C_TURMA
+    V2 --> TE_EVT
+    V2 --> F1
+    V2 --> F2
+
+    V3 --> C_CURSO
+    V3 --> C_DISC
+    V3 --> C_TURMA
+    V3 --> C_MAT
+    V3 --> C_ALUNO
+    V3 --> C_PARC
+
+    V4 --> TE_EVT
+    V4 --> TE_ET
+
+    V5 --> L_AUD
+
+    V6 --> V2
+
+    %% ===== Triggers =====
+    T1 --> C_NOTA
+    T1 --> C_AVA
+    T1 --> C_MAT
+    T1 --> L_AUD
+
+    T2 --> C_MAT
+    T2 --> L_AUD
+
+    T3 --> C_PAG
+    T3 --> C_PARC
+    T3 --> L_AUD
+
+    T4 --> TE_EVT
+    T4 --> TE_ET
+    T4 --> TE_MM
+
+    %% ===== Estilos =====
+    classDef fn fill:#e8f0fe,stroke:#3b82f6,stroke-width:1px,color:#0f172a;
+    classDef sp fill:#e8fff4,stroke:#10b981,stroke-width:1px,color:#064e3b;
+    classDef vw fill:#fff7e6,stroke:#f59e0b,stroke-width:1px,color:#7c2d12;
+    classDef tr fill:#ffecec,stroke:#ef4444,stroke-width:1px,color:#7f1d1d;
+    classDef tb fill:#f8fafc,stroke:#64748b,stroke-width:1px,color:#0f172a;
+
+    class F1,F2,F3 fn;
+    class P1,P2,P3,P4,P5,P6,P7,P8 sp;
+    class V1,V2,V3,V4,V5,V6 vw;
+    class T1,T2,T3,T4 tr;
+    class C_ALUNO,C_CURSO,C_DISC,C_TURMA,C_MAT,C_AVA,C_NOTA,C_PARC,C_PAG,C_PESSOA,C_DEPT,C_PROF,TE_ET,TE_SESS,TE_EVT,TE_MM,L_AUD,L_ERR,L_RUN,A_DT,A_DA,A_DC,A_DTU,A_FA,A_FF,A_FT,A_KPI tb;

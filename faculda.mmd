@@ -1,0 +1,428 @@
+﻿erDiagram
+    %% =========================
+    %% CORE LAYER
+    %% =========================
+    CORE_PESSOA {
+        INT PessoaID PK
+        UUID PessoaGuid
+        NVARCHAR NomeExibicao
+        VARBINARY DocumentoHash
+        NVARCHAR Email
+        VARCHAR Telefone
+        DATE DataNascimento
+        BIT Ativo
+        DATETIME2 CriadoEm
+        DATETIME2 AtualizadoEm
+    }
+
+    CORE_DEPARTAMENTO {
+        INT DepartamentoID PK
+        NVARCHAR Nome
+        VARCHAR Sigla
+        VARCHAR CentroCusto
+        NVARCHAR EmailContato
+        BIT Ativo
+        DATETIME2 CriadoEm
+    }
+
+    CORE_ALUNO {
+        INT AlunoID PK
+        INT PessoaID FK
+        VARCHAR RA
+        DATE DataIngresso
+        VARCHAR StatusAcademico
+        BIT Bolsista
+        DECIMAL PercentualBolsa
+        DATETIME2 CriadoEm
+    }
+
+    CORE_PROFESSOR {
+        INT ProfessorID PK
+        INT PessoaID FK
+        INT DepartamentoID FK
+        VARCHAR Titulacao
+        VARCHAR RegimeTrabalho
+        DATE DataAdmissao
+        BIT Ativo
+        DATETIME2 CriadoEm
+    }
+
+    CORE_CURSO {
+        INT CursoID PK
+        INT DepartamentoID FK
+        VARCHAR Codigo
+        NVARCHAR Nome
+        VARCHAR Nivel
+        VARCHAR Modalidade
+        SMALLINT CargaHorariaTotal
+        TINYINT SemestresPrevistos
+        BIT Ativo
+        DATETIME2 CriadoEm
+    }
+
+    CORE_DISCIPLINA {
+        INT DisciplinaID PK
+        INT CursoID FK
+        VARCHAR Codigo
+        NVARCHAR Nome
+        SMALLINT CargaHoraria
+        TINYINT Creditos
+        TINYINT SemestreSugerido
+        BIT Ativa
+        DATETIME2 CriadoEm
+    }
+
+    CORE_TURMA {
+        INT TurmaID PK
+        INT DisciplinaID FK
+        INT ProfessorID FK
+        VARCHAR CodigoTurma
+        SMALLINT Ano
+        TINYINT Periodo
+        VARCHAR Turno
+        SMALLINT Vagas
+        DATE DataInicio
+        DATE DataFim
+        BIT Encerrada
+        DATETIME2 CriadoEm
+    }
+
+    CORE_MATRICULA {
+        BIGINT MatriculaID PK
+        INT AlunoID FK
+        INT TurmaID FK
+        DATETIME2 DataMatricula
+        VARCHAR OrigemMatricula
+        VARCHAR StatusMatricula
+        DECIMAL FrequenciaPercentual
+        DECIMAL NotaFinal
+        DATETIME2 UltimaAtualizacao
+    }
+
+    CORE_AVALIACAO {
+        INT AvaliacaoID PK
+        INT TurmaID FK
+        NVARCHAR NomeAvaliacao
+        VARCHAR TipoAvaliacao
+        DECIMAL Peso
+        DECIMAL NotaMaxima
+        DATE DataAplicacao
+        DATETIME2 CriadoEm
+    }
+
+    CORE_NOTA {
+        BIGINT NotaID PK
+        INT AvaliacaoID FK
+        BIGINT MatriculaID FK
+        DECIMAL NotaObtida
+        NVARCHAR Comentario
+        DATETIME2 LancadaEm
+    }
+
+    CORE_PLANOFINANCEIRO {
+        INT PlanoFinanceiroID PK
+        INT CursoID FK
+        SMALLINT AnoReferencia
+        DECIMAL ValorMensalBase
+        TINYINT DiaVencimento
+        DECIMAL PercentualMulta
+        DECIMAL PercentualJurosMes
+        BIT Ativo
+    }
+
+    CORE_PARCELAFINANCEIRA {
+        BIGINT ParcelaID PK
+        INT AlunoID FK
+        INT PlanoFinanceiroID FK
+        CHAR Competencia
+        DATE DataVencimento
+        DECIMAL ValorOriginal
+        DECIMAL ValorDesconto
+        DECIMAL ValorMulta
+        DECIMAL ValorPago
+        DATE DataPagamento
+        VARCHAR StatusParcela
+        VARCHAR CanalGeracao
+    }
+
+    CORE_PAGAMENTO {
+        BIGINT PagamentoID PK
+        BIGINT ParcelaID FK
+        DATETIME2 DataPagamento
+        DECIMAL ValorPagamento
+        VARCHAR MeioPagamento
+        VARCHAR GatewayStatus
+        VARCHAR ReferenciaExterna
+        NVARCHAR UsuarioLancamento
+    }
+
+    %% =========================
+    %% SECURITY + LOG LAYER
+    %% =========================
+    SECURITY_USUARIOSISTEMA {
+        INT UsuarioID PK
+        VARCHAR Login
+        NVARCHAR NomeExibicao
+        NVARCHAR Email
+        VARCHAR Perfil
+        BIT Ativo
+        DATETIME2 CriadoEm
+    }
+
+    LOG_CHANGEAUDIT {
+        BIGINT AuditID PK
+        SYSNAME OrigemSchema
+        SYSNAME OrigemObjeto
+        NVARCHAR ChaveRegistro
+        VARCHAR Operacao
+        NVARCHAR DadosAntes
+        NVARCHAR DadosDepois
+        NVARCHAR AppUser
+        NVARCHAR HostName
+        DATETIME2 EventTime
+        UUID CorrelationID
+    }
+
+    LOG_PROCESSRUN {
+        BIGINT ProcessRunID PK
+        VARCHAR ProcessoNome
+        VARCHAR Camada
+        DATETIME2 IniciadoEm
+        DATETIME2 FinalizadoEm
+        VARCHAR StatusExecucao
+        INT LinhasLidas
+        INT LinhasProcessadas
+        INT LinhasRejeitadas
+        UUID CorrelationID
+    }
+
+    LOG_ERRORLOG {
+        BIGINT ErrorID PK
+        VARCHAR ProcessoNome
+        VARCHAR Etapa
+        INT NumeroErro
+        SMALLINT Severidade
+        SMALLINT Estado
+        SYSNAME ProcedureName
+        INT Linha
+        NVARCHAR Mensagem
+        UUID CorrelationID
+        DATETIME2 CriadoEm
+    }
+
+    LOG_ACCESSLOG {
+        BIGINT AccessLogID PK
+        INT UsuarioID FK
+        VARCHAR LoginEfetivo
+        VARCHAR Acao
+        VARCHAR Recurso
+        VARCHAR IpOrigem
+        SMALLINT StatusCode
+        INT DuracaoMs
+        DATETIME2 CriadoEm
+    }
+
+    %% =========================
+    %% TELEMETRY LAYER
+    %% =========================
+    TELEMETRY_EVENTTYPE {
+        INT EventTypeID PK
+        VARCHAR EventCode
+        VARCHAR Categoria
+        TINYINT Severidade
+        BIT Ativo
+        DATETIME2 CriadoEm
+    }
+
+    TELEMETRY_SESSIONAPP {
+        BIGINT SessionID PK
+        INT AlunoID FK
+        INT UsuarioID FK
+        VARCHAR ClientID
+        VARCHAR Platform
+        VARCHAR AppVersion
+        DATETIME2 StartedAt
+        DATETIME2 EndedAt
+        BIT IsAuthenticated
+        VARCHAR IpAddress
+        CHAR CountryCode
+    }
+
+    TELEMETRY_EVENTSTREAM {
+        BIGINT EventID PK
+        INT EventTypeID FK
+        BIGINT SessionID FK
+        INT AlunoID FK
+        DATETIME2 OccurredAt
+        DATETIME2 IngestedAt
+        VARCHAR SourceSystem
+        UUID CorrelationID
+        VARCHAR EventKey
+        INT DurationMs
+        DECIMAL NumericValue
+        BIT BooleanValue
+        NVARCHAR PayloadJson
+        CHAR ProcessingStatus
+    }
+
+    TELEMETRY_METRICMINUTE {
+        BIGINT MetricMinuteID PK
+        VARCHAR MetricName
+        DATETIME2 MetricMinute
+        VARCHAR Dimension1
+        VARCHAR Dimension2
+        DECIMAL MetricValue
+        DATETIME2 CreatedAt
+    }
+
+    %% =========================
+    %% ANALYTICS LAYER
+    %% =========================
+    ANALYTICS_DIMTEMPO {
+        INT TempoKey PK
+        DATE DataCompleta
+        SMALLINT Ano
+        TINYINT Mes
+        TINYINT Dia
+        TINYINT Trimestre
+        TINYINT SemanaAno
+        TINYINT DiaSemana
+        VARCHAR NomeDia
+        VARCHAR NomeMes
+        BIT IsFimSemana
+    }
+
+    ANALYTICS_DIMCURSO {
+        INT CursoKey PK
+        INT CursoID
+        VARCHAR CodigoCurso
+        NVARCHAR NomeCurso
+        VARCHAR DepartamentoSigla
+        VARCHAR Nivel
+        VARCHAR Modalidade
+        BIT IsCurrent
+        DATE EffectiveStartDate
+        DATE EffectiveEndDate
+    }
+
+    ANALYTICS_DIMALUNO {
+        INT AlunoKey PK
+        INT AlunoID
+        VARCHAR RA
+        VARCHAR StatusAcademico
+        BIT Bolsista
+        VARCHAR FaixaBolsa
+        BIT IsCurrent
+        DATE EffectiveStartDate
+        DATE EffectiveEndDate
+    }
+
+    ANALYTICS_DIMTURMA {
+        INT TurmaKey PK
+        INT TurmaID
+        VARCHAR CodigoTurma
+        SMALLINT Ano
+        TINYINT Periodo
+        VARCHAR Turno
+        VARCHAR DisciplinaCodigo
+        NVARCHAR DisciplinaNome
+        INT CursoID
+        INT ProfessorID
+        NVARCHAR ProfessorNome
+        BIT Encerrada
+    }
+
+    ANALYTICS_FATOACADEMICO {
+        BIGINT FatoAcademicoID PK
+        INT TempoKey FK
+        INT AlunoKey FK
+        INT CursoKey FK
+        INT TurmaKey FK
+        BIGINT MatriculaID
+        VARCHAR StatusMatricula
+        DECIMAL FrequenciaPercentual
+        DECIMAL NotaFinal
+        BIT Aprovado
+        SMALLINT CargaHoraria
+        TINYINT Creditos
+        DATETIME2 AtualizadoEm
+    }
+
+    ANALYTICS_FATOFINANCEIRO {
+        BIGINT FatoFinanceiroID PK
+        INT TempoKey FK
+        INT AlunoKey FK
+        INT CursoKey FK
+        BIGINT ParcelaID
+        CHAR Competencia
+        VARCHAR StatusParcela
+        DECIMAL ValorLiquido
+        DECIMAL ValorPago
+        DECIMAL SaldoAberto
+        INT AtrasoDias
+        DATETIME2 AtualizadoEm
+    }
+
+    ANALYTICS_FATOTELEMETRIA {
+        BIGINT FatoTelemetriaID PK
+        INT TempoKey FK
+        INT EventTypeID FK
+        INT AlunoKey FK
+        BIGINT SessionID FK
+        INT Eventos
+        DECIMAL DuracaoMediaMs
+        DECIMAL ValorNumericoSoma
+        DATETIME2 CriadoEm
+    }
+
+    ANALYTICS_KPI_DIARIO {
+        BIGINT KPIID PK
+        DATE DataRef
+        VARCHAR KPIName
+        DECIMAL KPIValue
+        VARCHAR Unidade
+        DECIMAL MetaValor
+        DATETIME2 RefreshTime
+    }
+
+    %% =========================
+    %% RELACIONAMENTOS (FK)
+    %% =========================
+    CORE_PESSOA ||--o| CORE_ALUNO : "PessoaID"
+    CORE_PESSOA ||--o| CORE_PROFESSOR : "PessoaID"
+    CORE_DEPARTAMENTO ||--o{ CORE_PROFESSOR : "DepartamentoID"
+    CORE_DEPARTAMENTO ||--o{ CORE_CURSO : "DepartamentoID"
+    CORE_CURSO ||--o{ CORE_DISCIPLINA : "CursoID"
+    CORE_DISCIPLINA ||--o{ CORE_TURMA : "DisciplinaID"
+    CORE_PROFESSOR ||--o{ CORE_TURMA : "ProfessorID"
+    CORE_ALUNO ||--o{ CORE_MATRICULA : "AlunoID"
+    CORE_TURMA ||--o{ CORE_MATRICULA : "TurmaID"
+    CORE_TURMA ||--o{ CORE_AVALIACAO : "TurmaID"
+    CORE_AVALIACAO ||--o{ CORE_NOTA : "AvaliacaoID"
+    CORE_MATRICULA ||--o{ CORE_NOTA : "MatriculaID"
+    CORE_CURSO ||--o{ CORE_PLANOFINANCEIRO : "CursoID"
+    CORE_ALUNO ||--o{ CORE_PARCELAFINANCEIRA : "AlunoID"
+    CORE_PLANOFINANCEIRO ||--o{ CORE_PARCELAFINANCEIRA : "PlanoFinanceiroID"
+    CORE_PARCELAFINANCEIRA ||--o{ CORE_PAGAMENTO : "ParcelaID"
+
+    SECURITY_USUARIOSISTEMA ||--o{ LOG_ACCESSLOG : "UsuarioID"
+
+    CORE_ALUNO ||--o{ TELEMETRY_SESSIONAPP : "AlunoID"
+    SECURITY_USUARIOSISTEMA ||--o{ TELEMETRY_SESSIONAPP : "UsuarioID"
+    TELEMETRY_EVENTTYPE ||--o{ TELEMETRY_EVENTSTREAM : "EventTypeID"
+    TELEMETRY_SESSIONAPP ||--o{ TELEMETRY_EVENTSTREAM : "SessionID"
+    CORE_ALUNO ||--o{ TELEMETRY_EVENTSTREAM : "AlunoID"
+
+    ANALYTICS_DIMTEMPO ||--o{ ANALYTICS_FATOACADEMICO : "TempoKey"
+    ANALYTICS_DIMALUNO ||--o{ ANALYTICS_FATOACADEMICO : "AlunoKey"
+    ANALYTICS_DIMCURSO ||--o{ ANALYTICS_FATOACADEMICO : "CursoKey"
+    ANALYTICS_DIMTURMA ||--o{ ANALYTICS_FATOACADEMICO : "TurmaKey"
+
+    ANALYTICS_DIMTEMPO ||--o{ ANALYTICS_FATOFINANCEIRO : "TempoKey"
+    ANALYTICS_DIMALUNO ||--o{ ANALYTICS_FATOFINANCEIRO : "AlunoKey"
+    ANALYTICS_DIMCURSO ||--o{ ANALYTICS_FATOFINANCEIRO : "CursoKey"
+
+    ANALYTICS_DIMTEMPO ||--o{ ANALYTICS_FATOTELEMETRIA : "TempoKey"
+    TELEMETRY_EVENTTYPE ||--o{ ANALYTICS_FATOTELEMETRIA : "EventTypeID"
+    ANALYTICS_DIMALUNO ||--o{ ANALYTICS_FATOTELEMETRIA : "AlunoKey"
+    TELEMETRY_SESSIONAPP ||--o{ ANALYTICS_FATOTELEMETRIA : "SessionID"
